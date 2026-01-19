@@ -1,0 +1,28 @@
+services:
+  miniops_postgredb:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: miniops
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports: ["5432:5432"]
+    volumes: [miniops_pg:/var/lib/postgresql/data]
+
+  miniops_api:
+    image: miniops-api:local
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__MiniOpsDb: Host=miniops_postgredb;Port=5432;Database=miniops;Username=postgres;Password=postgres
+      Jwt__Key: dev-super-secret-key-change-me-please
+      Jwt__Issuer: miniops
+      Jwt__Audience: miniops
+    ports: ["5165:8080"]
+    depends_on: [miniops_postgredb]
+
+  miniops_web:
+    image: miniops-web:local
+    ports: ["5173:80"]
+    depends_on: [miniops_api]
+
+volumes:
+  miniops_pg:
